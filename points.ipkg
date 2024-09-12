@@ -1,0 +1,6 @@
+package points
+version = 0.0.0
+depends = elab-util
+
+modules = Points.Pos,
+          Points.Player
