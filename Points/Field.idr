@@ -12,6 +12,24 @@ record Field (width, height: Nat) where
   moves : List (Pos width height, Player)
   points : Vect (width * height) Point
 
+point : {width, height: Nat} -> Field width height -> Pos width height -> Point
+point field pos = index (toFin pos) $ points field
+
+isPuttingAllowed : {width, height: Nat} -> Field width height -> Pos width height -> Bool
+isPuttingAllowed field pos = Point.isPuttingAllowed $ point field pos
+
+isPlayer : {width, height: Nat} -> Field width height -> Pos width height -> Player -> Bool
+isPlayer field pos = Point.isPlayer $ point field pos
+
+isPlayersPoint : {width, height: Nat} -> Field width height -> Pos width height -> Player -> Bool
+isPlayersPoint field pos = Point.isPlayersPoint $ point field pos
+
+isCapturedPoint : {width, height: Nat} -> Field width height -> Pos width height -> Player -> Bool
+isCapturedPoint field pos = Point.isCapturedPoint $ point field pos
+
+isEmptyBase : {width, height: Nat} -> Field width height -> Pos width height -> Player -> Bool
+isEmptyBase field pos = Point.isEmptyBase $ point field pos
+
 emptyField : (width: Nat) -> (height: Nat) -> Field width height
 emptyField width height = MkField 0 0 [] $ replicate (width * height) EmptyPoint
 
@@ -29,3 +47,33 @@ wave startPos f = wave' empty (singleton startPos)
         wave' passed front = if null (SortedSet.toList front)
                              then passed
                              else wave' (union passed front) (nextFront passed front)
+
+getInputPoints : {width, height: Nat} -> Field width height -> (pos : Pos width height) -> Player -> List ((chainPos ** Adjacent pos chainPos), (capturedPos ** Adjacent pos capturedPos))
+getInputPoints field pos player =
+  let isDirectionPlayer : ((pos1 : Pos width height) -> Maybe (pos2 ** Adjacent pos1 pos2)) -> Bool
+      isDirectionPlayer dir = maybe False (\dirPos => isPlayer field (fst dirPos) player) $ dir pos
+      list1 = if not $ isDirectionPlayer w' then
+                if isDirectionPlayer nw' then toList (zip (nw' pos) (w' pos))
+                else if isDirectionPlayer n' then toList (zip (n' pos) (w' pos))
+                else []
+              else
+                []
+      list2 = if not $ isDirectionPlayer s' then
+                if isDirectionPlayer sw' then toList (zip (sw' pos) (s' pos)) ++ list1
+                else if isDirectionPlayer w' then toList (zip (w' pos) (s' pos)) ++ list1
+                else list1
+              else
+                list1
+      list3 = if not $ isDirectionPlayer e' then
+                if isDirectionPlayer se' then toList (zip (se' pos) (e' pos)) ++ list2
+                else if isDirectionPlayer s' then toList (zip (s' pos) (e' pos)) ++ list2
+                else list2
+              else
+                list2
+      list4 = if not $ isDirectionPlayer n' then
+                if isDirectionPlayer ne' then toList (zip (ne' pos) (n' pos)) ++ list3
+                else if isDirectionPlayer e' then toList (zip (e' pos) (n' pos)) ++ list3
+                else list3
+              else
+                list3
+  in list4

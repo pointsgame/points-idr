@@ -16,18 +16,26 @@ data Point : Type where
 
 %runElab derive "Point" [Show, Eq]
 
+export
 isPuttingAllowed : Point -> Bool
 isPuttingAllowed EmptyPoint = True
 isPuttingAllowed (EmptyBasePoint _) = True
 isPuttingAllowed _ = False
 
+export
 isPlayer : Point -> Player -> Bool
 isPlayer (PlayerPoint p) player = p == player
 isPlayer (BasePoint p _) player = p == player
 isPlayer _ _ = False
 
+export
 isPlayersPoint : Point -> Player -> Bool
 isPlayersPoint point player = point == PlayerPoint player
 
+export
 isCapturedPoint : Point -> Player -> Bool
 isCapturedPoint point player = point == BasePoint (nextPlayer player) True
+
+export
+isEmptyBase : Point -> Player -> Bool
+isEmptyBase point player = point == Point.EmptyBasePoint player

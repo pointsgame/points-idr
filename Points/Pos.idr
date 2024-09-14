@@ -37,6 +37,7 @@ AdjacentTopLeft pos1 pos2 = AdjacentBottomRight pos2 pos1
 AdjacentBottomLeft : Pos width height -> Pos width height -> Type
 AdjacentBottomLeft pos1 pos2 = AdjacentTopRight pos2 pos1
 
+export
 data Adjacent : Pos width height -> Pos width height -> Type where
   AdjRight : AdjacentRight pos1 pos2 -> Adjacent pos1 pos2
   AdjLeft : AdjacentLeft pos1 pos2 -> Adjacent pos1 pos2
