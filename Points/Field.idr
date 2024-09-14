@@ -77,3 +77,13 @@ getInputPoints field pos player =
               else
                 list3
   in list4
+
+square : List (Pos width height) -> Integer
+square [] = 0
+square (pos :: tail) = square' $ pos :: tail
+  where skewProduct : Pos width height -> Pos width height -> Integer
+        skewProduct (x1, y1) (x2, y2) = cast x1 * cast y2 - cast y1 * cast x2
+        square' : List (Pos width height) -> Integer
+        square' [] = 0
+        square' (pos1 :: []) = skewProduct pos1 pos
+        square' (pos1 :: pos2 :: tail) = skewProduct pos1 pos2 + square' (pos2 :: tail)
