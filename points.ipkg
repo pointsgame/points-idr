@@ -5,4 +5,5 @@ depends = base,
           elab-util
 
 modules = Points.Pos,
-          Points.Player
+          Points.Player,
+          Points.Point
