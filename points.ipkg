@@ -1,6 +1,8 @@
 package points
 version = 0.0.0
-depends = elab-util
+depends = base,
+          contrib,
+          elab-util
 
 modules = Points.Pos,
           Points.Player

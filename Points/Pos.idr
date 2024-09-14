@@ -1,11 +1,15 @@
 module Points.Pos
 
 import Data.Fin
+import Data.Fin.Extra
 
 %default total
 
 Pos : Nat -> Nat -> Type
 Pos width height = (Fin width, Fin height)
+
+toFin : {width, height: Nat} -> Pos width height -> Fin (width * height)
+toFin (x, y) = indexProd x y
 
 AdjacentRight : Pos width height -> Pos width height -> Type
 AdjacentRight (x1, y1) (x2, y2) = (FS x1 = weaken x2, y1 = y2)
