@@ -2,6 +2,8 @@ module Points.Pos
 
 import Data.Fin
 
+%default total
+
 Pos : Nat -> Nat -> Type
 Pos width height = (Fin width, Fin height)
 
@@ -96,3 +98,27 @@ se pos = do
   (epos ** adj1) <- e pos
   (sepos ** adj2) <- s epos
   pure (sepos ** adjacentToBottomRight adj1 adj2)
+
+n' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+n' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTop adj)) $ n pos1
+
+s' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+s' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottom adj)) $ s pos1
+
+w' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+w' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjLeft adj)) $ w pos1
+
+e' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+e' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjRight adj)) $ e pos1
+
+nw' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+nw' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTopLeft adj)) $ nw pos1
+
+ne' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+ne' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTopRight adj)) $ ne pos1
+
+sw' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+sw' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottomLeft adj)) $ sw pos1
+
+se' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
+se' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottomRight adj)) $ se pos1
