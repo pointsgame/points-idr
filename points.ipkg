@@ -6,4 +6,5 @@ depends = base,
 
 modules = Points.Pos,
           Points.Player,
-          Points.Point
+          Points.Point,
+          Points.Field

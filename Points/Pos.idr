@@ -5,6 +5,7 @@ import Data.Fin.Extra
 
 %default total
 
+export
 Pos : Nat -> Nat -> Type
 Pos width height = (Fin width, Fin height)
 
