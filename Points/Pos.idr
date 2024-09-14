@@ -29,26 +29,25 @@ AdjacentTopLeft pos1 pos2 = AdjacentBottomRight pos2 pos1
 AdjacentBottomLeft : Pos width height -> Pos width height -> Type
 AdjacentBottomLeft pos1 pos2 = AdjacentTopRight pos2 pos1
 
-Adjacent : Pos width height -> Pos width height -> Type
-Adjacent pos1 pos2 =
-  Either (AdjacentRight pos1 pos2) $
-  Either (AdjacentLeft pos1 pos2) $
-  Either (AdjacentBottom pos1 pos2) $
-  Either (AdjacentTop pos1 pos2) $
-  Either (AdjacentBottomRight pos1 pos2) $
-  Either (AdjacentTopLeft pos1 pos2) $
-  Either (AdjacentTopRight pos1 pos2) $
-  AdjacentBottomLeft pos1 pos2
+data Adjacent : Pos width height -> Pos width height -> Type where
+  AdjRight : AdjacentRight pos1 pos2 -> Adjacent pos1 pos2
+  AdjLeft : AdjacentLeft pos1 pos2 -> Adjacent pos1 pos2
+  AdjBottom : AdjacentBottom pos1 pos2 -> Adjacent pos1 pos2
+  AdjTop : AdjacentTop pos1 pos2 -> Adjacent pos1 pos2
+  AdjBottomRight: AdjacentBottomRight pos1 pos2 -> Adjacent pos1 pos2
+  AdjTopLeft : AdjacentTopLeft pos1 pos2 -> Adjacent pos1 pos2
+  AdjTopRight : AdjacentTopRight pos1 pos2 -> Adjacent pos1 pos2
+  AdjBottomLeft : AdjacentBottomLeft pos1 pos2 -> Adjacent pos1 pos2
 
 adjacentSymm : Adjacent pos1 pos2 -> Adjacent pos2 pos1
-adjacentSymm (Left adj) = Right $ Left adj
-adjacentSymm (Right $ Left adj) = Left adj
-adjacentSymm (Right $ Right $ Left adj) = Right $ Right $ Right $ Left adj
-adjacentSymm (Right $ Right $ Right $ Left adj) = Right $ Right $ Left adj
-adjacentSymm (Right $ Right $ Right $ Right $ Left adj) = Right $ Right $ Right $ Right $ Right $ Left adj
-adjacentSymm (Right $ Right $ Right $ Right $ Right $ Left adj) = Right $ Right $ Right $ Right $ Left adj
-adjacentSymm (Right $ Right $ Right $ Right $ Right $ Right $ Left adj) = Right $ Right $ Right $ Right $ Right $ Right $ Right adj
-adjacentSymm (Right $ Right $ Right $ Right $ Right $ Right $ Right adj) = Right $ Right $ Right $ Right $ Right $ Right $ Left adj
+adjacentSymm (AdjRight adj) = AdjLeft adj
+adjacentSymm (AdjLeft adj) = AdjRight adj
+adjacentSymm (AdjBottom adj) = AdjTop adj
+adjacentSymm (AdjTop adj) = AdjBottom adj
+adjacentSymm (AdjBottomRight adj) = AdjTopLeft adj
+adjacentSymm (AdjTopLeft adj) = AdjBottomRight adj
+adjacentSymm (AdjTopRight adj) = AdjBottomLeft adj
+adjacentSymm (AdjBottomLeft adj) = AdjTopRight adj
 
 adjacentToBottomRight : AdjacentRight pos1 pos2 -> AdjacentBottom pos2 pos3 -> AdjacentBottomRight pos1 pos3
 adjacentToBottomRight {pos1 = (_, _), pos2 = (_, _), pos3 = (_, _)} adjR adjB = (rewrite sym $ fst adjB in fst adjR, rewrite snd adjR in snd adjB)
