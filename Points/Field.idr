@@ -1,5 +1,6 @@
 module Points.Field
 
+import Data.DPair
 import Data.SortedSet
 import Data.Vect
 import Points.Pos
@@ -48,9 +49,9 @@ wave startPos f = wave' empty (singleton startPos)
                              then passed
                              else wave' (union passed front) (nextFront passed front)
 
-getInputPoints : {height: Nat} -> Field width height -> (pos : Pos width height) -> Player -> List ((chainPos ** Adjacent pos chainPos), (capturedPos ** Adjacent pos capturedPos))
+getInputPoints : {height: Nat} -> Field width height -> (pos : Pos width height) -> Player -> List ((Subset (Pos width height) (Adjacent pos)), (Subset (Pos width height) (Adjacent pos)))
 getInputPoints field pos player =
-  let isDirectionPlayer : ((pos1 : Pos width height) -> Maybe (pos2 ** Adjacent pos1 pos2)) -> Bool
+  let isDirectionPlayer : ((pos : Pos width height) -> Maybe (Subset (Pos width height) (Adjacent pos))) -> Bool
       isDirectionPlayer dir = maybe False (\dirPos => isPlayer field (fst dirPos) player) $ dir pos
       list1 = if not $ isDirectionPlayer w' then
                 if isDirectionPlayer nw' then toList (zip (nw' pos) (w' pos))

@@ -1,5 +1,6 @@
 module Points.Pos
 
+import Data.DPair
 import Data.Fin
 import Data.Fin.Extra
 import Decidable.Equality.Core
@@ -85,7 +86,7 @@ data Adjacent : Pos width height -> Pos width height -> Type where
   AdjTopRight : AdjacentTopRight pos1 pos2 -> Adjacent pos1 pos2
   AdjBottomLeft : AdjacentBottomLeft pos1 pos2 -> Adjacent pos1 pos2
 
-adjacentSymm : Adjacent pos1 pos2 -> Adjacent pos2 pos1
+0 adjacentSymm : Adjacent pos1 pos2 -> Adjacent pos2 pos1
 adjacentSymm (AdjRight adj) = AdjLeft adj
 adjacentSymm (AdjLeft adj) = AdjRight adj
 adjacentSymm (AdjBottom adj) = AdjTop adj
@@ -95,93 +96,93 @@ adjacentSymm (AdjTopLeft adj) = AdjBottomRight adj
 adjacentSymm (AdjTopRight adj) = AdjBottomLeft adj
 adjacentSymm (AdjBottomLeft adj) = AdjTopRight adj
 
-adjacentToBottomRight : AdjacentRight pos1 pos2 -> AdjacentBottom pos2 pos3 -> AdjacentBottomRight pos1 pos3
+0 adjacentToBottomRight : AdjacentRight pos1 pos2 -> AdjacentBottom pos2 pos3 -> AdjacentBottomRight pos1 pos3
 adjacentToBottomRight {pos1 = (_, _), pos2 = (_, _), pos3 = (_, _)} adjR adjB = (rewrite sym $ fst adjB in fst adjR, rewrite snd adjR in snd adjB)
 
-adjacentToTopRight : AdjacentRight pos1 pos2 -> AdjacentTop pos2 pos3 -> AdjacentTopRight pos1 pos3
+0 adjacentToTopRight : AdjacentRight pos1 pos2 -> AdjacentTop pos2 pos3 -> AdjacentTopRight pos1 pos3
 adjacentToTopRight {pos1 = (_, _), pos2 = (_, _), pos3 = (_, _)} adjR adjT = (rewrite fst adjT in fst adjR, rewrite snd adjR in sym $ snd adjT)
 
 export
-n : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** AdjacentTop pos1 pos2)
+n : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTop pos)
 n (x, FZ) = Nothing
-n (x, FS y) = Just ((x, weaken y) ** (Refl, Refl))
+n (x, FS y) = Just $ Element (x, weaken y) (Refl, Refl)
 
 export
-s : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentBottom pos1 pos2)
+s : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottom pos)
 s {height = S Z} (x, FZ) = Nothing
-s {height = S (S _)} (x, FZ) = Just ((x, FS FZ) ** (Refl, Refl))
-s (x, FS y) = map (\((x1, y1) ** adj) => ((x1, FS y1) ** (fst adj, cong FS (snd adj)))) $ s (x, y)
+s {height = S (S _)} (x, FZ) = Just $ Element (x, FS FZ) (Refl, Refl)
+s (x, FS y) = map (\(Element (x1, y1) adj) => (Element (x1, FS y1) (fst adj, cong FS (snd adj)))) $ s (x, y)
 
 export
-w : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** AdjacentLeft pos1 pos2)
+w : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentLeft pos)
 w (FZ, x) = Nothing
-w (FS x, y) = Just ((weaken x, y) ** (Refl, Refl))
+w (FS x, y) = Just $ Element (weaken x, y) (Refl, Refl)
 
 export
-e : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentRight pos1 pos2)
+e : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentRight pos)
 e {width = S Z} (FZ, y) = Nothing
-e {width = S (S _)} (FZ, y) = Just ((FS FZ, y) ** (Refl, Refl))
-e (FS x, y) = map (\((x1, y1) ** adj) => ((FS x1, y1) ** (cong FS (fst adj), snd adj))) $ e (x, y)
+e {width = S (S _)} (FZ, y) = Just $ Element (FS FZ, y) (Refl, Refl)
+e (FS x, y) = map (\(Element (x1, y1) adj) => (Element (FS x1, y1) (cong FS (fst adj), snd adj))) $ e (x, y)
 
 export
-nw : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentTopLeft pos1 pos2)
+nw : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTopLeft pos)
 nw pos = do
-  (npos ** adj1) <- n pos
-  (nwpos ** adj2) <- w npos
-  pure (nwpos ** adjacentToBottomRight adj2 adj1)
+  Element npos adj1 <- n pos
+  Element nwpos adj2 <- w npos
+  pure $ Element nwpos $ adjacentToBottomRight adj2 adj1
 
 export
-ne : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentTopRight pos1 pos2)
+ne : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTopRight pos)
 ne pos = do
-  (epos ** adj1) <- e pos
-  (nepos ** adj2) <- n epos
-  pure (nepos ** adjacentToTopRight adj1 adj2)
+  Element epos adj1 <- e pos
+  Element nepos adj2 <- n epos
+  pure $ Element nepos $ adjacentToTopRight adj1 adj2
 
 export
-sw : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentBottomLeft pos1 pos2)
+sw : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomLeft pos)
 sw pos = do
-  (spos ** adj1) <- s pos
-  (swpos ** adj2) <- w spos
-  pure (swpos ** adjacentToTopRight adj2 adj1)
+  Element spos adj1 <- s pos
+  Element swpos adj2 <- w spos
+  pure $ Element swpos $ adjacentToTopRight adj2 adj1
 
 export
-se : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentBottomRight pos1 pos2)
+se : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomRight pos)
 se pos = do
-  (epos ** adj1) <- e pos
-  (sepos ** adj2) <- s epos
-  pure (sepos ** adjacentToBottomRight adj1 adj2)
+  Element epos adj1 <- e pos
+  Element sepos adj2 <- s epos
+  pure $ Element sepos $ adjacentToBottomRight adj1 adj2
 
 export
-n' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-n' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTop adj)) $ n pos1
+n' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+n' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTop adj)) $ n pos1
 
 export
-s' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-s' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottom adj)) $ s pos1
+s' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+s' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottom adj)) $ s pos1
 
 export
-w' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-w' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjLeft adj)) $ w pos1
+w' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+w' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjLeft adj)) $ w pos1
 
 export
-e' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-e' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjRight adj)) $ e pos1
+e' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+e' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjRight adj)) $ e pos1
 
 export
-nw' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-nw' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTopLeft adj)) $ nw pos1
+nw' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+nw' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTopLeft adj)) $ nw pos1
 
 export
-ne' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-ne' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjTopRight adj)) $ ne pos1
+ne' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+ne' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTopRight adj)) $ ne pos1
 
 export
-sw' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-sw' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottomLeft adj)) $ sw pos1
+sw' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+sw' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottomLeft adj)) $ sw pos1
 
 export
-se' : (pos1: Pos width height) -> Maybe (pos2: Pos width height ** Adjacent pos1 pos2)
-se' pos1 = map (\(pos2 ** adj) => (pos2 ** AdjBottomRight adj)) $ se pos1
+se' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+se' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottomRight adj)) $ se pos1
 
 data Direction : Type where
   DirRight: Direction
@@ -261,7 +262,7 @@ direction {pos1} {pos2} adj with (decAdjacentRight {pos1} {pos2})
                 _ | Yes _ = DirBottomLeft
                 _ | No p8 = void $ adjacentAbsurd adj p1 p2 p3 p4 p5 p6 p7 p8
 
-directionToPos : Direction -> (pos1: Pos width height) -> Maybe (pos2 ** Adjacent pos1 pos2)
+directionToPos : Direction -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 directionToPos DirRight = e'
 directionToPos DirBottomRight = se'
 directionToPos DirBottom = s'
