@@ -10,7 +10,7 @@ Pos : Nat -> Nat -> Type
 Pos width height = (Fin width, Fin height)
 
 export
-toFin : {width, height: Nat} -> Pos width height -> Fin (width * height)
+toFin : {height: Nat} -> Pos width height -> Fin (width * height)
 toFin (x, y) = indexProd x y
 
 AdjacentRight : Pos width height -> Pos width height -> Type
@@ -87,7 +87,7 @@ e {width = S (S _)} (FZ, y) = Just ((FS FZ, y) ** (Refl, Refl))
 e (FS x, y) = map (\((x1, y1) ** adj) => ((FS x1, y1) ** (cong FS (fst adj), snd adj))) $ e (x, y)
 
 export
-nw : (pos1 : Pos width height) -> Maybe (pos2 ** AdjacentTopLeft pos1 pos2)
+nw : (pos1: Pos width height) -> Maybe (pos2 ** AdjacentTopLeft pos1 pos2)
 nw pos = do
   (npos ** adj1) <- n pos
   (nwpos ** adj2) <- w npos
