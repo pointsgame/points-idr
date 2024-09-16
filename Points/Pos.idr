@@ -184,6 +184,7 @@ export
 se' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 se' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottomRight adj)) $ se pos1
 
+export
 data Direction : Type where
   DirRight: Direction
   DirBottomRight: Direction
@@ -194,6 +195,7 @@ data Direction : Type where
   DirTop: Direction
   DirTopRight: Direction
 
+export
 inverse : Direction -> Direction
 inverse DirRight = DirLeft
 inverse DirBottomRight = DirTopLeft
@@ -204,6 +206,7 @@ inverse DirTopLeft = DirBottomRight
 inverse DirTop = DirBottom
 inverse DirTopRight = DirBottomLeft
 
+export
 rotate : Direction -> Direction
 rotate DirRight = DirBottomRight
 rotate DirBottomRight = DirBottom
@@ -214,6 +217,7 @@ rotate DirTopLeft = DirTop
 rotate DirTop = DirTopRight
 rotate DirTopRight = DirRight
 
+export
 rotateNotAdjacent : Direction -> Direction
 rotateNotAdjacent DirRight = DirBottomLeft
 rotateNotAdjacent DirBottomRight = DirBottomLeft
@@ -243,6 +247,7 @@ adjacentAbsurd (AdjTopLeft adj) _ _ _ _ _ nadj _ _ = nadj adj
 adjacentAbsurd (AdjTopRight adj) _ _ _ _ _ _ nadj _ = nadj adj
 adjacentAbsurd (AdjBottomLeft adj) _ _ _ _ _ _ _ nadj = nadj adj
 
+export
 direction : {pos1, pos2: Pos width height} -> (0 _: Adjacent pos1 pos2) -> Direction
 direction {pos1} {pos2} adj with (decAdjacentRight {pos1} {pos2})
   _ | Yes _ = DirRight
@@ -262,6 +267,7 @@ direction {pos1} {pos2} adj with (decAdjacentRight {pos1} {pos2})
                 _ | Yes _ = DirBottomLeft
                 _ | No p8 = void $ adjacentAbsurd adj p1 p2 p3 p4 p5 p6 p7 p8
 
+export
 directionToPos : Direction -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 directionToPos DirRight = e'
 directionToPos DirBottomRight = se'
