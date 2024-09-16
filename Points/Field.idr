@@ -1,6 +1,7 @@
 module Points.Field
 
 import Data.DPair
+import Data.Integral
 import Data.List
 import Data.List1
 import Data.SortedSet
@@ -105,3 +106,17 @@ buildChain field startPos nextPos adj player = if square chain < 0 then Just cha
              then chain
              else getChain nextPos nextPos' nextAdj $ fromMaybe (cons nextPos' chain) $ List1.fromList $ dropWhile (/= nextPos') $ toList chain
         chain = getChain startPos nextPos adj $ cons nextPos $ startPos ::: []
+
+uniq : (Eq a) => List a -> List a
+uniq = map head . group
+
+posInsideRing : Pos width height -> List1 (Pos width height) -> Bool
+posInsideRing (x, y) ring =
+  case List1.fromList $ uniq $ map snd $ filter ((<= x) . fst) $ toList ring of
+    Just coords =>
+      let coords' = if List1.last coords == y
+                    then appendl coords $ toList $ head' $ if head coords == y then tail coords else toList coords
+                    else if head coords == y then cons (List1.last coords) coords
+                    else coords
+       in odd $ count (\(a, b, c) => b == y && ((a < b && c > b) || (a > b && c < b))) $ zip3 (toList coords') (tail coords') (drop 1 $ tail coords')
+    Nothing => False
