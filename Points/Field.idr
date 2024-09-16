@@ -120,3 +120,8 @@ posInsideRing (x, y) ring =
                     else coords
        in odd $ count (\(a, b, c) => b == y && ((a < b && c > b) || (a > b && c < b))) $ zip3 (toList coords') (tail coords') (drop 1 $ tail coords')
     Nothing => False
+
+getInsideRing : Pos width height -> List1 (Pos width height) -> SortedSet (Pos width height)
+getInsideRing startPos ring =
+  let ringSet = fromList $ toList ring
+   in wave startPos $ not . flip contains ringSet
