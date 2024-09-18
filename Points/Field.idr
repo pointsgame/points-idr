@@ -125,3 +125,25 @@ getInsideRing : Pos width height -> List1 (Pos width height) -> SortedSet (Pos w
 getInsideRing startPos ring =
   let ringSet = fromList $ toList ring
    in wave startPos $ not . flip contains ringSet
+
+getEmptyBaseChain : {height: Nat} -> Field width height -> Pos width height -> Player -> Maybe $ List1 $ Pos width height
+getEmptyBaseChain field startPos player =
+  (w startPos) >>= (getEmptyBaseChain' . fst)
+  where getEmptyBaseChain' : Pos width height -> Maybe $ List1 $ Pos width height
+        getEmptyBaseChain' pos = if not $ isPlayer field pos player then (w pos) >>= (getEmptyBaseChain' . fst)
+                                 else let inputPoints = getInputPoints field pos player
+                                          chains = mapMaybe (\((Element chainPos adj), _) => buildChain field pos chainPos adj player) inputPoints
+                                          result = head' $ List.filter (posInsideRing startPos) chains
+                                      in result <|> ((w pos) >>= (getEmptyBaseChain' . fst))
+
+putPoint : {height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
+putPoint pos player field _ =
+ let enemyPlayer = nextPlayer player
+     point = point field pos
+     newMoves = (pos, player) :: moves field
+  in if isEmptyBase point player then
+       { moves := newMoves
+       , points := replaceAt (toFin pos) (PlayerPoint player) $ points field
+       } field
+     else
+       ?xxx
