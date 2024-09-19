@@ -146,4 +146,19 @@ putPoint pos player field _ =
        , points := replaceAt (toFin pos) (PlayerPoint player) $ points field
        } field
      else
-       ?xxx
+       let captures = mapMaybe
+             (\(Element chainPos chainAdj, Element capturedPos _) =>
+               do chain <- buildChain field pos chainPos chainAdj player
+                  let captured = getInsideRing capturedPos chain
+                  pure (chain, SortedSet.toList captured)
+             ) $ getInputPoints field pos player
+           capturedCount = List.length . List.filter (\pos' => isPlayersPoint field pos' enemyPlayer)
+           freedCount = List.length . List.filter (\pos' => isCapturedPoint field pos' player)
+           (emptyCaptures, realCaptures) = List.partition (\(_, captured) => capturedCount captured == 0) captures
+           capturedTotal = sum $ map (capturedCount . snd) realCaptures
+           freedTotal = sum $ map (freedCount . snd) realCaptures
+       in if isEmptyBase point enemyPlayer
+          then let enemyEmptyBaseChain = getEmptyBaseChain field pos enemyPlayer
+                   enemyEmptyBase = filter (\pos => isEmptyBase field pos player) $ SortedSet.toList $ maybe SortedSet.empty (getInsideRing pos) $ enemyEmptyBaseChain
+               in ?a
+          else ?b
