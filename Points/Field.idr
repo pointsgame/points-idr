@@ -139,9 +139,9 @@ getEmptyBaseChain field startPos player =
 putPoint : {height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
 putPoint pos player field _ =
  let enemyPlayer = nextPlayer player
-     point = point field pos
+     point' = point field pos
      newMoves = (pos, player) :: moves field
-  in if isEmptyBase point player then
+  in if isEmptyBase point' player then
        { moves := newMoves
        , points := replaceAt (toFin pos) (PlayerPoint player) $ points field
        } field
@@ -157,8 +157,18 @@ putPoint pos player field _ =
            (emptyCaptures, realCaptures) = List.partition (\(_, captured) => capturedCount captured == 0) captures
            capturedTotal = sum $ map (capturedCount . snd) realCaptures
            freedTotal = sum $ map (freedCount . snd) realCaptures
-       in if isEmptyBase point enemyPlayer
+           realCaptured = concatMap snd realCaptures
+       in if isEmptyBase point' enemyPlayer
           then let enemyEmptyBaseChain = getEmptyBaseChain field pos enemyPlayer
                    enemyEmptyBase = filter (\pos => isEmptyBase field pos player) $ SortedSet.toList $ maybe SortedSet.empty (getInsideRing pos) $ enemyEmptyBaseChain
-               in ?a
+               in if not $ null captures
+                  then { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
+                       , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
+                       , moves := newMoves
+                       , points := let points1 = replaceAt (Pos.toFin pos) (PlayerPoint player) $ points field
+                                       points2 = foldr (\pos' => \points => replaceAt (Pos.toFin pos') EmptyPoint points) points1 enemyEmptyBase
+                                       points3 = foldr (\pos' => \points => replaceAt (Pos.toFin pos') (capture player (point field pos')) points) points2 realCaptured
+                                   in points3
+                       } field
+                  else ?a
           else ?b
