@@ -10,6 +10,7 @@ import Points.Pos
 import Points.Player
 import Points.Point
 
+public export
 record Field (width, height: Nat) where
   constructor MkField
   scoreRed, scoreBlack : Nat
@@ -19,6 +20,7 @@ record Field (width, height: Nat) where
 point : {height: Nat} -> Field width height -> Pos width height -> Point
 point field pos = index (toFin pos) $ points field
 
+export
 isPuttingAllowed : {height: Nat} -> Field width height -> Pos width height -> Bool
 isPuttingAllowed field pos = Point.isPuttingAllowed $ point field pos
 
@@ -34,6 +36,7 @@ isCapturedPoint field pos = Point.isCapturedPoint $ point field pos
 isEmptyBase : {height: Nat} -> Field width height -> Pos width height -> Player -> Bool
 isEmptyBase field pos = Point.isEmptyBase $ point field pos
 
+export
 emptyField : (width: Nat) -> (height: Nat) -> Field width height
 emptyField width height = MkField 0 0 [] $ replicate (width * height) EmptyPoint
 
@@ -136,6 +139,7 @@ getEmptyBaseChain field startPos player =
                                           result = head' $ List.filter (posInsideRing startPos) chains
                                       in result <|> ((w pos) >>= (getEmptyBaseChain' . fst))
 
+export
 putPoint : {height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
 putPoint pos player field _ =
  let enemyPlayer = nextPlayer player
