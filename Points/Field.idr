@@ -165,10 +165,24 @@ putPoint pos player field _ =
                   then { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
                        , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
                        , moves := newMoves
-                       , points := let points1 = replaceAt (Pos.toFin pos) (PlayerPoint player) $ points field
-                                       points2 = foldr (\pos' => \points => replaceAt (Pos.toFin pos') EmptyPoint points) points1 enemyEmptyBase
-                                       points3 = foldr (\pos' => \points => replaceAt (Pos.toFin pos') (capture player (point field pos')) points) points2 realCaptured
+                       , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
+                                       points2 = foldr (\pos' => \points => replaceAt (toFin pos') EmptyPoint points) points1 enemyEmptyBase
+                                       points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
                                    in points3
                        } field
-                  else ?a
-          else ?b
+                  else { scoreRed := if player == Player.Red then scoreRed field else scoreRed field + 1
+                       , scoreBlack := if player == Player.Black then scoreBlack field else scoreBlack field + 1
+                       , moves := newMoves
+                       , points := let points1 = foldr (\pos' => \points => replaceAt (toFin pos') (BasePoint enemyPlayer False) points) (points field) enemyEmptyBase
+                                       points2 = replaceAt (toFin pos) (BasePoint enemyPlayer True) points1
+                                   in points2
+                       } field
+          else let newEmptyBase = List.filter (\pos' => point field pos' == EmptyPoint) $ concatMap snd emptyCaptures
+               in { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
+                  , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
+                  , moves := newMoves
+                  , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
+                                  points2 = foldr (\pos' => \points => replaceAt (toFin pos') (EmptyBasePoint player) points) points1 newEmptyBase
+                                  points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
+                              in points3
+                  } field
