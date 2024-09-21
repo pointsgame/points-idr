@@ -44,7 +44,73 @@ simpleSurround = maybe False (\field =>
     scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
   ) simpleSurroundImage
 
+surroundEmptyTerritoryImage = constructField """
+.a.
+a.a
+.a.
+"""
+
+surroundEmptyTerritory : Bool
+surroundEmptyTerritory = maybe False (\field =>
+    scoreRed (GenField.field field) == 0 && scoreBlack (GenField.field field) == 0
+  ) surroundEmptyTerritoryImage
+
+movePriorityImage = constructField """
+.aB.
+aCaB
+.aB.
+"""
+
+movePriority : Bool
+movePriority = maybe False (\field =>
+    scoreRed (GenField.field field) == 0 && scoreBlack (GenField.field field) == 1
+  ) movePriorityImage
+
+movePriorityBigImage = constructField """
+.B..
+BaB.
+aCaB
+.aB.
+"""
+
+movePriorityBig : Bool
+movePriorityBig = maybe False (\field =>
+    scoreRed (GenField.field field) == 0 && scoreBlack (GenField.field field) == 2
+  ) movePriorityBigImage
+
+onionSurroundingsImage = constructField """
+...c...
+..cBc..
+.cBaBc.
+..cBc..
+...c...
+"""
+
+onionSurroundings : Bool
+onionSurroundings = maybe False (\field =>
+    scoreRed (GenField.field field) == 4 && scoreBlack (GenField.field field) == 0
+  ) onionSurroundingsImage
+
+deepOnionSurroundingsImage = constructField """
+...D...
+..DcD..
+.DcBcD.
+DcBaBcD
+.DcBcD.
+..DcD..
+...D...
+"""
+
+deepOnionSurroundings : Bool
+deepOnionSurroundings = maybe False (\field =>
+    scoreRed (GenField.field field) == 0 && scoreBlack (GenField.field field) == 9
+  ) deepOnionSurroundingsImage
+
 main : IO ()
 main = do
   putStrLn $ "simple surround \{show simpleSurround}"
-  pure ()
+  putStrLn $ "surround empty territory \{show surroundEmptyTerritory}"
+  putStrLn $ "move priority \{show movePriority}"
+  putStrLn $ "move priority, big \{show movePriorityBig}"
+  putStrLn $ "onion surroundings \{show onionSurroundings}"
+  putStrLn $ "deep onion surroundings \{show deepOnionSurroundings}"
