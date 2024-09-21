@@ -40,7 +40,7 @@ export
 emptyField : (width: Nat) -> (height: Nat) -> Field width height
 emptyField width height = MkField 0 0 [] $ replicate (width * height) EmptyPoint
 
-wave : Pos width height -> (Pos width height -> Bool) -> SortedSet $ Pos width height
+wave : {width, height: Nat} -> Pos width height -> (Pos width height -> Bool) -> SortedSet $ Pos width height
 wave startPos f = wave' empty (singleton startPos)
   where neighborhood : Pos width height -> List $ Pos width height
         neighborhood pos = mapMaybe (map fst) $ n' pos ::
@@ -55,7 +55,7 @@ wave startPos f = wave' empty (singleton startPos)
                              then passed
                              else wave' (union passed front) (nextFront passed front)
 
-getInputPoints : {height: Nat} -> Field width height -> (pos : Pos width height) -> Player -> List ((Subset (Pos width height) (Adjacent pos)), (Subset (Pos width height) (Adjacent pos)))
+getInputPoints : {width, height: Nat} -> Field width height -> (pos : Pos width height) -> Player -> List ((Subset (Pos width height) (Adjacent pos)), (Subset (Pos width height) (Adjacent pos)))
 getInputPoints field pos player =
   let isDirectionPlayer : ((pos : Pos width height) -> Maybe (Subset (Pos width height) (Adjacent pos))) -> Bool
       isDirectionPlayer dir = maybe False (\dirPos => isPlayer field (fst dirPos) player) $ dir pos
@@ -94,7 +94,7 @@ square (pos ::: tail) = square' $ pos :: tail
         square' (pos1 :: []) = skewProduct pos1 pos
         square' (pos1 :: pos2 :: tail) = skewProduct pos1 pos2 + square' (pos2 :: tail)
 
-buildChain : {height: Nat} -> Field width height -> (startPos, nextPos: Pos width height) -> (0 _: Adjacent startPos nextPos) -> Player -> Maybe $ List1 $ Pos width height
+buildChain : {width, height: Nat} -> Field width height -> (startPos, nextPos: Pos width height) -> (0 _: Adjacent startPos nextPos) -> Player -> Maybe $ List1 $ Pos width height
 buildChain field startPos nextPos adj player = if square chain < 0 then Just chain else Nothing
   where getNextPlayerPos : (pos: Pos width height) -> Direction -> Subset (Pos width height) (Adjacent pos)
         getNextPlayerPos centerPos dir = case directionToPos dir centerPos of
@@ -124,12 +124,12 @@ posInsideRing (x, y) ring =
        in odd $ count (\(a, b, c) => b == y && ((a < b && c > b) || (a > b && c < b))) $ zip3 (toList coords') (tail coords') (drop 1 $ tail coords')
     Nothing => False
 
-getInsideRing : Pos width height -> List1 (Pos width height) -> SortedSet (Pos width height)
+getInsideRing : {width, height: Nat} -> Pos width height -> List1 (Pos width height) -> SortedSet (Pos width height)
 getInsideRing startPos ring =
   let ringSet = fromList $ toList ring
    in wave startPos $ not . flip contains ringSet
 
-getEmptyBaseChain : {height: Nat} -> Field width height -> Pos width height -> Player -> Maybe $ List1 $ Pos width height
+getEmptyBaseChain : {width, height: Nat} -> Field width height -> Pos width height -> Player -> Maybe $ List1 $ Pos width height
 getEmptyBaseChain field startPos player =
   (w startPos) >>= (getEmptyBaseChain' . fst)
   where getEmptyBaseChain' : Pos width height -> Maybe $ List1 $ Pos width height
@@ -140,7 +140,7 @@ getEmptyBaseChain field startPos player =
                                       in result <|> ((w pos) >>= (getEmptyBaseChain' . fst))
 
 export
-putPoint : {height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
+putPoint : {width, height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
 putPoint pos player field _ =
  let enemyPlayer = nextPlayer player
      point' = point field pos

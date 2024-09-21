@@ -107,9 +107,10 @@ n : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTop po
 n (x, FZ) = Nothing
 n (x, FS y) = Just $ Element (x, weaken y) (Refl, Refl)
 
-export %inline
-s : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottom pos)
-s {height = S Z} (x, FZ) = Nothing
+export
+s : {height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottom pos)
+s {height = Z} (_, FZ) impossible
+s {height = S Z} (_, FZ) = Nothing
 s {height = S (S _)} (x, FZ) = Just $ Element (x, FS FZ) (Refl, Refl)
 s (x, FS y) = map (\(Element (x1, y1) adj) => (Element (x1, FS y1) (fst adj, cong FS (snd adj)))) $ s (x, y)
 
@@ -118,9 +119,10 @@ w : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentLeft p
 w (FZ, x) = Nothing
 w (FS x, y) = Just $ Element (weaken x, y) (Refl, Refl)
 
-export %inline
-e : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentRight pos)
-e {width = S Z} (FZ, y) = Nothing
+export
+e : {width: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentRight pos)
+e {width = Z} (FZ, _) impossible
+e {width = S Z} (FZ, _) = Nothing
 e {width = S (S _)} (FZ, y) = Just $ Element (FS FZ, y) (Refl, Refl)
 e (FS x, y) = map (\(Element (x1, y1) adj) => (Element (FS x1, y1) (cong FS (fst adj), snd adj))) $ e (x, y)
 
@@ -132,21 +134,21 @@ nw pos = do
   pure $ Element nwpos $ adjacentToBottomRight adj2 adj1
 
 export %inline
-ne : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTopRight pos)
+ne : {width: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentTopRight pos)
 ne pos = do
   Element epos adj1 <- e pos
   Element nepos adj2 <- n epos
   pure $ Element nepos $ adjacentToTopRight adj1 adj2
 
 export %inline
-sw : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomLeft pos)
+sw : {height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomLeft pos)
 sw pos = do
   Element spos adj1 <- s pos
   Element swpos adj2 <- w spos
   pure $ Element swpos $ adjacentToTopRight adj2 adj1
 
 export %inline
-se : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomRight pos)
+se : {width, height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (AdjacentBottomRight pos)
 se pos = do
   Element epos adj1 <- e pos
   Element sepos adj2 <- s epos
@@ -157,7 +159,7 @@ n' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 n' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTop adj)) $ n pos1
 
 export %inline
-s' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+s' : {height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 s' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottom adj)) $ s pos1
 
 export %inline
@@ -165,7 +167,7 @@ w' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 w' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjLeft adj)) $ w pos1
 
 export %inline
-e' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+e' : {width: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 e' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjRight adj)) $ e pos1
 
 export %inline
@@ -173,15 +175,15 @@ nw' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos
 nw' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTopLeft adj)) $ nw pos1
 
 export %inline
-ne' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+ne' : {width: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 ne' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjTopRight adj)) $ ne pos1
 
 export %inline
-sw' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+sw' : {height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 sw' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottomLeft adj)) $ sw pos1
 
 export %inline
-se' : (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+se' : {width, height: Nat} -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 se' pos1 = map (\(Element pos2 adj) => Element pos2 (AdjBottomRight adj)) $ se pos1
 
 export
@@ -268,7 +270,7 @@ direction {pos1} {pos2} adj with (decAdjacentRight {pos1} {pos2})
                 _ | No p8 = void $ adjacentAbsurd adj p1 p2 p3 p4 p5 p6 p7 p8
 
 export
-directionToPos : Direction -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
+directionToPos : {width, height: Nat} -> Direction -> (pos: Pos width height) -> Maybe $ Subset (Pos width height) (Adjacent pos)
 directionToPos DirRight = e'
 directionToPos DirBottomRight = se'
 directionToPos DirBottom = s'
