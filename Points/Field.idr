@@ -95,7 +95,7 @@ square (pos ::: tail) = square' $ pos :: tail
         square' (pos1 :: pos2 :: tail) = skewProduct pos1 pos2 + square' (pos2 :: tail)
 
 buildChain : {width, height: Nat} -> Field width height -> (startPos, nextPos: Pos width height) -> (0 _: Adjacent startPos nextPos) -> Player -> Maybe $ List1 $ Pos width height
-buildChain field startPos nextPos adj player = if square chain < 0 then Just chain else Nothing
+buildChain field startPos nextPos adj player = if square chain > 0 then Just chain else Nothing
   where getNextPlayerPos : (pos: Pos width height) -> Direction -> Subset (Pos width height) (Adjacent pos)
         getNextPlayerPos centerPos dir = case directionToPos dir centerPos of
                                            Nothing => getNextPlayerPos centerPos $ rotate dir
