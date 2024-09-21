@@ -51,7 +51,7 @@ wave startPos f = wave' empty (singleton startPos)
         nextFront : SortedSet (Pos width height) -> SortedSet (Pos width height) -> SortedSet (Pos width height)
         nextFront passed front = difference (SortedSet.fromList $ filter f $ concatMap neighborhood (SortedSet.toList front)) passed
         wave' : SortedSet (Pos width height) -> SortedSet (Pos width height) -> SortedSet (Pos width height)
-        wave' passed front = if null (SortedSet.toList front)
+        wave' passed front = if null front
                              then passed
                              else wave' (union passed front) (nextFront passed front)
 
@@ -104,7 +104,7 @@ buildChain field startPos nextPos adj player = if square chain < 0 then Just cha
                                                                      else getNextPlayerPos centerPos $ rotate dir
         getChain : (startPos', nextPos': Pos width height) -> (0 _: Adjacent startPos' nextPos') -> List1 (Pos width height) -> List1 (Pos width height)
         getChain _ nextPos adj chain =
-          let Element nextPos' nextAdj = getNextPlayerPos nextPos (rotateNotAdjacent (inverse (direction adj)))
+          let Element nextPos' nextAdj = getNextPlayerPos nextPos $ rotateNotAdjacent $ inverse $ direction adj
           in if nextPos' == startPos
              then chain
              else getChain nextPos nextPos' nextAdj $ fromMaybe (cons nextPos' chain) $ List1.fromList $ dropWhile (/= nextPos') $ toList chain
