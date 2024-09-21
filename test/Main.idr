@@ -106,6 +106,177 @@ deepOnionSurroundings = maybe False (\field =>
     scoreRed (GenField.field field) == 0 && scoreBlack (GenField.field field) == 9
   ) deepOnionSurroundingsImage
 
+applyControlSurroundingInSameTurnImage = constructField """
+.a.
+aBa
+.a.
+"""
+
+applyControlSurroundingInSameTurn : Bool
+applyControlSurroundingInSameTurn = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) applyControlSurroundingInSameTurnImage
+
+doubleSurroundImage = constructField """
+.a.a.
+aAbAa
+.a.a.
+"""
+
+doubleSurround : Bool
+doubleSurround = maybe False (\field =>
+    scoreRed (GenField.field field) == 2 && scoreBlack (GenField.field field) == 0
+  ) doubleSurroundImage
+
+doubleSurroundWithEmptyPartImage = constructField """
+.b.b..
+b.zAb.
+.b.b..
+"""
+
+doubleSurroundWithEmptyPart : Bool
+doubleSurroundWithEmptyPart = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) doubleSurroundWithEmptyPartImage
+
+shouldNotLeaveEmptyInsideImage = constructField """
+.aaaa..
+a....a.
+a.b...a
+.z.bC.a
+a.b...a
+a....a.
+.aaaa..
+"""
+
+shouldNotLeaveEmptyInside : Bool
+shouldNotLeaveEmptyInside = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) shouldNotLeaveEmptyInsideImage
+
+surroundInOppositeTurnImage = constructField """
+.a.
+aBa
+.a.
+"""
+
+surroundInOppositeTurn : Bool
+surroundInOppositeTurn = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) surroundInOppositeTurnImage
+
+partlySurroundInOppositeTurnImage = constructField """
+.a..
+aBa.
+.a.a
+..a.
+"""
+
+partlySurroundInOppositeTurn : Bool
+partlySurroundInOppositeTurn = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) partlySurroundInOppositeTurnImage
+
+holeInsideSurroundingImage = constructField """
+....c....
+...c.c...
+..c...c..
+.c..a..c.
+c..a.a..c
+.c..a..c.
+..c...c..
+...cBc...
+....d....
+"""
+
+holeInsideSurrounding : Bool
+holeInsideSurrounding = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) holeInsideSurroundingImage
+
+holeInsideSurroundingAfterOppositeTurnSurroundingImage = constructField """
+....b....
+...b.b...
+..b...b..
+.b..a..b.
+b..a.a..b
+.b..a..b.
+..b...b..
+...bCb...
+....b....
+"""
+
+holeInsideSurroundingAfterOppositeTurnSurrounding : Bool
+holeInsideSurroundingAfterOppositeTurnSurrounding = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) holeInsideSurroundingAfterOppositeTurnSurroundingImage
+
+surroundingDoesNotExpandImage = constructField """
+....a....
+...a.a...
+..a.a.a..
+.a.a.a.a.
+a.a.aBa.a
+.a.a.a.a.
+..a.a.a..
+...a.a...
+....a....
+"""
+
+surroundingDoesNotExpand : Bool
+surroundingDoesNotExpand = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) surroundingDoesNotExpandImage
+
+twoSurroundingsWithCommonBorderImage = constructField """
+.a..
+aAa.
+.bAa
+..a.
+"""
+
+twoSurroundingsWithCommonBorder : Bool
+twoSurroundingsWithCommonBorder = maybe False (\field =>
+    scoreRed (GenField.field field) == 2 && scoreBlack (GenField.field field) == 0
+  ) twoSurroundingsWithCommonBorderImage
+
+twoSurroundingsWithCommonDotImage = constructField """
+.a.a.
+aBcBa
+.a.a.
+"""
+
+twoSurroundingsWithCommonDot : Bool
+twoSurroundingsWithCommonDot = maybe False (\field =>
+    scoreRed (GenField.field field) == 2 && scoreBlack (GenField.field field) == 0
+  ) twoSurroundingsWithCommonDotImage
+
+threeSurroundingsWithCommonBordersImage = constructField """
+..a..
+.aAa.
+..bAa
+.aAa.
+..a..
+"""
+
+threeSurroundingsWithCommonBorders : Bool
+threeSurroundingsWithCommonBorders = maybe False (\field =>
+    scoreRed (GenField.field field) == 3 && scoreBlack (GenField.field field) == 0
+  ) threeSurroundingsWithCommonBordersImage
+
+twoSurroundingsWithCommonDotOneBorderlineEmptyPlaceImage = constructField """
+..a..
+.aBa.
+..c.a
+.aBa.
+..a..
+"""
+
+twoSurroundingsWithCommonDotOneBorderlineEmptyPlace : Bool
+twoSurroundingsWithCommonDotOneBorderlineEmptyPlace = maybe False (\field =>
+    scoreRed (GenField.field field) == 2 && scoreBlack (GenField.field field) == 0
+  ) twoSurroundingsWithCommonDotOneBorderlineEmptyPlaceImage
+
 main : IO ()
 main = do
   putStrLn $ "simple surround \{show simpleSurround}"
@@ -114,3 +285,16 @@ main = do
   putStrLn $ "move priority, big \{show movePriorityBig}"
   putStrLn $ "onion surroundings \{show onionSurroundings}"
   putStrLn $ "deep onion surroundings \{show deepOnionSurroundings}"
+  putStrLn $ "apply 'control' surrounding in same turn \{show applyControlSurroundingInSameTurn}"
+  putStrLn $ "double surround \{show doubleSurround}"
+  putStrLn $ "double surround with empty part \{show doubleSurroundWithEmptyPart}"
+  putStrLn $ "should not leave empty inside \{show shouldNotLeaveEmptyInside}"
+  putStrLn $ "surround in opposite turn \{show surroundInOppositeTurn}"
+  putStrLn $ "partly surround in opposite turn \{show partlySurroundInOppositeTurn}"
+  putStrLn $ "a hole inside a surrounding \{show holeInsideSurrounding}"
+  putStrLn $ "a hole inside a surrounding, after opposite turn surrounding \{show holeInsideSurroundingAfterOppositeTurnSurrounding}"
+  putStrLn $ "surrounding does not expand \{show surroundingDoesNotExpand}"
+  putStrLn $ "2 surroundings with common border \{show twoSurroundingsWithCommonBorder}"
+  putStrLn $ "2 surroundings with common dot \{show twoSurroundingsWithCommonDot}"
+  putStrLn $ "3 surroundings with common borders \{show threeSurroundingsWithCommonBorders}"
+  putStrLn $ "2 surroundings with common dot, one borderline empty place \{show twoSurroundingsWithCommonDotOneBorderlineEmptyPlace}"
