@@ -1,12 +1,14 @@
 module Main
 
+import Control.Monad.Random
+import Control.Monad.State
 import Data.Vect
 import Data.Iterable
 import Data.String
 import Decidable.Equality.Core
 import Decidable.Equality
 import System
-import System.Random
+import System.Random.Pure.StdGen
 import Points.Pos
 import Points.Player
 import Points.Field
@@ -17,10 +19,10 @@ swap (FS FZ) (x1 :: x2 :: xs) = (x2, x1 :: xs)
 swap (FS (FS i)) (x1 :: x2 :: xs) with (swap (FS i) (x2 :: xs))
   _ | (x', xs') = (x', x1 :: xs')
 
-shuffle : {i: Nat} -> Vect i a -> IO $ Vect i a
+shuffle : {i: Nat} -> Vect i a -> Rand $ Vect i a
 shuffle Nil = pure Nil
 shuffle {i = S i} xs@(_ :: _) = do
-  k <- rndFin _
+  k <- getRandom
   let (x', xs') = swap k xs
   xs'' <- shuffle xs'
   pure (x' :: xs'')
@@ -29,7 +31,7 @@ allMoves : (width, height: Nat) -> Vect (width * height) $ Pos width height
 allMoves width height = do
   concat $ map (\x => map (\y => (x, y)) range) range
 
-randomGame : (width, height: Nat) -> IO $ Field width height
+randomGame : (width, height: Nat) -> Rand $ Field width height
 randomGame width height = do
   moves <- shuffle $ allMoves width height
   pure $ foldl (\field => \pos => case decEq (isPuttingAllowed field pos) True of
@@ -67,11 +69,14 @@ parseArgs (_ :: width :: height :: gamesNumber :: seed :: []) = do
   pure $ MkArgs width height gamesNumber seed
 parseArgs _ = Nothing
 
+MonadRec m => MonadRec (RandomT m) where
+  tailRecM x acc ini f =
+    MkRandomT $ tailRecM x acc ini $ \s => unRandomT . f s
+
 main : IO ()
 main = do
   let usage = putStrLn "Usage: Bench {width} {height} {games} {seed}" >> exitFailure {io = IO}
   args <- getArgs
   args <- maybe usage pure $ parseArgs args
-  srand $ fromInteger $ seed args
-  result <- foldM (const $ map gameResult $ randomGame (width args) (height args)) $ gamesNumber args
+  let result = evalRandom (mkStdGen $ fromInteger $ seed args) $ foldM (const $ map gameResult $ randomGame (width args) (height args)) $ gamesNumber args
   putStrLn $ show (redScore result) ++ ":" ++ show (blackScore result)
