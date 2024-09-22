@@ -17,6 +17,7 @@ record Field (width, height: Nat) where
   moves : List (Pos width height, Player)
   points : Vect (width * height) Point
 
+export
 point : {height: Nat} -> Field width height -> Pos width height -> Point
 point field pos = index (toFin pos) $ points field
 
@@ -24,15 +25,19 @@ export
 isPuttingAllowed : {height: Nat} -> Field width height -> Pos width height -> Bool
 isPuttingAllowed field pos = Point.isPuttingAllowed $ point field pos
 
+export
 isPlayer : {height: Nat} -> Field width height -> Pos width height -> Player -> Bool
 isPlayer field pos = Point.isPlayer $ point field pos
 
+export
 isPlayersPoint : {height: Nat} -> Field width height -> Pos width height -> Player -> Bool
 isPlayersPoint field pos = Point.isPlayersPoint $ point field pos
 
+export
 isCapturedPoint : {height: Nat} -> Field width height -> Pos width height -> Player -> Bool
 isCapturedPoint field pos = Point.isCapturedPoint $ point field pos
 
+export
 isEmptyBase : {height: Nat} -> Field width height -> Pos width height -> Player -> Bool
 isEmptyBase field pos = Point.isEmptyBase $ point field pos
 
@@ -190,3 +195,24 @@ putPoint pos player field _ =
                                   points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
                               in points3
                   } field
+
+export
+lastPlayer : Field width height -> Maybe Player
+lastPlayer = map snd . head' . moves
+
+export
+nextPlayer : Field width height -> Player
+nextPlayer = fromMaybe Player.Red . map Player.nextPlayer . lastPlayer
+
+export
+putNextPoint : {width, height: Nat} -> (pos: Pos width height) -> (field: Field width height) -> (0 _: isPuttingAllowed field pos = True) -> Field width height
+putNextPoint pos field = putPoint pos (nextPlayer field) field
+
+export
+winner : Field width height -> Maybe Player
+winner field =
+  if Field.scoreBlack field < Field.scoreRed field
+  then Just Player.Red
+  else if Field.scoreRed field < Field.scoreBlack field
+  then Just Player.Black
+  else Nothing
