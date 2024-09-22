@@ -3,6 +3,8 @@ package points-bench
 authors = "kurnevsky"
 version = 0.0.0
 depends = base
+        , contrib
+        , tailrec
         , points
 
 executable = points-bench
