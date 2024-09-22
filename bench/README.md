@@ -35,3 +35,17 @@ Run with:
 ```sh
 time ./bench/build/exec/points-bench 39 32 100 7
 ```
+
+### Racket
+
+Build with:
+
+```sh
+idris2 --cg racket --build bench/bench.ipkg
+```
+
+Run with:
+
+```sh
+time ./bench/build/exec/points-bench 39 32 1000 7
+```

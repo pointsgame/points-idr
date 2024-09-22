@@ -58,7 +58,7 @@
       }).library { };
     in {
       devShell.x86_64-linux = pkgs.mkShell {
-        packages = [ pkgs.idris2 pkgs.idris2Packages.idris2Lsp ];
+        packages = with pkgs; [ idris2 idris2Packages.idris2Lsp racket ];
 
         inputsFrom = [ points ];
       };
