@@ -15,6 +15,8 @@ record Field (width, height: Nat) where
   constructor MkField
   scoreRed, scoreBlack : Nat
   moves : List (Pos width height, Player)
+  lastSurroundChains : List $ List1 $ Pos width height
+  lastSurroundPlayer : Player
   points : Vect (width * height) Point
 
 export
@@ -43,7 +45,7 @@ isEmptyBase field pos = Point.isEmptyBase $ point field pos
 
 export
 emptyField : (width: Nat) -> (height: Nat) -> Field width height
-emptyField width height = MkField 0 0 [] $ replicate (width * height) EmptyPoint
+emptyField width height = MkField 0 0 [] [] Red $ replicate (width * height) EmptyPoint
 
 wave : {width, height: Nat} -> Pos width height -> (Pos width height -> Bool) -> SortedSet $ Pos width height
 wave startPos f = wave' empty (singleton startPos)
@@ -152,6 +154,8 @@ putPoint pos player field _ =
      newMoves = (pos, player) :: moves field
   in if isEmptyBase point' player then
        { moves := newMoves
+       , lastSurroundChains := []
+       , lastSurroundPlayer := player
        , points := replaceAt (toFin pos) (PlayerPoint player) $ points field
        } field
      else
@@ -174,6 +178,8 @@ putPoint pos player field _ =
                   then { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
                        , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
                        , moves := newMoves
+                       , lastSurroundChains := map fst realCaptures
+                       , lastSurroundPlayer := player
                        , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
                                        points2 = foldr (\pos' => \points => replaceAt (toFin pos') EmptyPoint points) points1 enemyEmptyBase
                                        points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
@@ -182,6 +188,8 @@ putPoint pos player field _ =
                   else { scoreRed := if player == Player.Red then scoreRed field else scoreRed field + 1
                        , scoreBlack := if player == Player.Black then scoreBlack field else scoreBlack field + 1
                        , moves := newMoves
+                       , lastSurroundChains := toList enemyEmptyBaseChain
+                       , lastSurroundPlayer := enemyPlayer
                        , points := let points1 = foldr (\pos' => \points => replaceAt (toFin pos') (BasePoint enemyPlayer False) points) (points field) enemyEmptyBase
                                        points2 = replaceAt (toFin pos) (BasePoint enemyPlayer True) points1
                                    in points2
@@ -190,6 +198,8 @@ putPoint pos player field _ =
                in { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
                   , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
                   , moves := newMoves
+                  , lastSurroundChains := map fst realCaptures
+                  , lastSurroundPlayer := player
                   , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
                                   points2 = foldr (\pos' => \points => replaceAt (toFin pos') (EmptyBasePoint player) points) points1 newEmptyBase
                                   points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
