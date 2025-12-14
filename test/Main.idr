@@ -277,6 +277,34 @@ twoSurroundingsWithCommonDotOneBorderlineEmptyPlace = maybe False (\field =>
     scoreRed (GenField.field field) == 2 && scoreBlack (GenField.field field) == 0
   ) twoSurroundingsWithCommonDotOneBorderlineEmptyPlaceImage
 
+ambiguousSurrounding1Image = constructField """
+.aa.aa.
+a..b..a
+a.aAa.a
+a..a..a
+.a...a.
+..aaa..
+"""
+
+ambiguousSurrounding1 : Bool
+ambiguousSurrounding1 = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) ambiguousSurrounding1Image
+
+ambiguousSurrounding2Image = constructField """
+..aaa..
+.a...a.
+a..a..a
+a.aAa.a
+a..b..a
+.aa.aa.
+"""
+
+ambiguousSurrounding2 : Bool
+ambiguousSurrounding2 = maybe False (\field =>
+    scoreRed (GenField.field field) == 1 && scoreBlack (GenField.field field) == 0
+  ) ambiguousSurrounding2Image
+
 main : IO ()
 main = do
   putStrLn $ "simple surround \{show simpleSurround}"
@@ -298,3 +326,5 @@ main = do
   putStrLn $ "2 surroundings with common dot \{show twoSurroundingsWithCommonDot}"
   putStrLn $ "3 surroundings with common borders \{show threeSurroundingsWithCommonBorders}"
   putStrLn $ "2 surroundings with common dot, one borderline empty place \{show twoSurroundingsWithCommonDotOneBorderlineEmptyPlace}"
+  putStrLn $ "ambiguous surrounding 1 \{show ambiguousSurrounding1}"
+  putStrLn $ "ambiguous surrounding 2 \{show ambiguousSurrounding2}"

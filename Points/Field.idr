@@ -146,6 +146,15 @@ getEmptyBaseChain field startPos player =
                                           result = head' $ List.filter (posInsideRing startPos) chains
                                       in result <|> ((w pos) >>= (getEmptyBaseChain' . fst))
 
+capture : Player -> Point -> Point
+capture player point = case point of
+  EmptyPoint => BasePoint player False
+  PlayerPoint p => if p == player then PlayerPoint p else BasePoint player True
+  BasePoint p enemy => if p == player then BasePoint p enemy
+                       else if enemy then PlayerPoint player
+                       else BasePoint player False
+  EmptyBasePoint _ => BasePoint player False
+
 export
 putPoint : {width, height: Nat} -> (pos : Pos width height) -> Player -> (field : Field width height) -> (0 _ :isPuttingAllowed field pos = true) -> Field width height
 putPoint pos player field _ =
@@ -159,52 +168,59 @@ putPoint pos player field _ =
        , points := replaceAt (toFin pos) (PlayerPoint player) $ points field
        } field
      else
-       let captures = mapMaybe
+       let inputPoints = getInputPoints field pos player
+           potentialChains = mapMaybe
              (\(Element chainPos chainAdj, Element capturedPos _) =>
                do chain <- buildChain field pos chainPos chainAdj player
-                  let captured = getInsideRing capturedPos chain
-                  pure (chain, SortedSet.toList captured)
-             ) $ getInputPoints field pos player
-           capturedCount = List.length . List.filter (\pos' => isPlayersPoint field pos' enemyPlayer)
-           freedCount = List.length . List.filter (\pos' => isCapturedPoint field pos' player)
-           (emptyCaptures, realCaptures) = List.partition (\(_, captured) => capturedCount captured == 0) captures
-           capturedTotal = sum $ map (capturedCount . snd) realCaptures
-           freedTotal = sum $ map (freedCount . snd) realCaptures
-           realCaptured = concatMap snd realCaptures
-       in if isEmptyBase point' enemyPlayer
-          then let enemyEmptyBaseChain = getEmptyBaseChain field pos enemyPlayer
-                   enemyEmptyBase = filter (\pos => isEmptyBase field pos player) $ SortedSet.toList $ maybe SortedSet.empty (getInsideRing pos) $ enemyEmptyBaseChain
-               in if not $ null captures
-                  then { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
-                       , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
-                       , moves := newMoves
-                       , lastSurroundChains := map fst realCaptures
-                       , lastSurroundPlayer := player
-                       , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
-                                       points2 = foldr (\pos' => \points => replaceAt (toFin pos') EmptyPoint points) points1 enemyEmptyBase
-                                       points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
-                                   in points3
-                       } field
-                  else { scoreRed := if player == Player.Red then scoreRed field else scoreRed field + 1
-                       , scoreBlack := if player == Player.Black then scoreBlack field else scoreBlack field + 1
-                       , moves := newMoves
-                       , lastSurroundChains := toList enemyEmptyBaseChain
-                       , lastSurroundPlayer := enemyPlayer
-                       , points := let points1 = foldr (\pos' => \points => replaceAt (toFin pos') (BasePoint enemyPlayer False) points) (points field) enemyEmptyBase
-                                       points2 = replaceAt (toFin pos) (BasePoint enemyPlayer True) points1
-                                   in points2
-                       } field
-          else let newEmptyBase = List.filter (\pos' => point field pos' == EmptyPoint) $ concatMap snd emptyCaptures
-               in { scoreRed := if player == Player.Red then scoreRed field + capturedTotal else minus (scoreRed field) freedTotal
-                  , scoreBlack := if player == Player.Black then scoreBlack field + capturedTotal else minus (scoreBlack field) freedTotal
-                  , moves := newMoves
-                  , lastSurroundChains := map fst realCaptures
-                  , lastSurroundPlayer := player
-                  , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points field
-                                  points2 = foldr (\pos' => \points => replaceAt (toFin pos') (EmptyBasePoint player) points) points1 newEmptyBase
-                                  points3 = foldr (\pos' => \points => replaceAt (toFin pos') (capture player (point field pos')) points) points2 realCaptured
-                              in points3
-                  } field
+                  pure (chain, capturedPos)
+             ) inputPoints
+           sortedChains = sortBy (\(c1, _), (c2, _) => compare (length c1) (length c2)) potentialChains
+           initialField = { lastSurroundPlayer := player, lastSurroundChains := [] } field
+           fieldWithCaptures = foldl
+             (\field', (chain, capturedPos) =>
+                let capturedSet = getInsideRing capturedPos chain
+                    capturedList = SortedSet.toList capturedSet
+                    capturedCount = count (\pos' => isPlayersPoint field' pos' enemyPlayer) capturedList
+                    freedCount = count (\pos' => isCapturedPoint field' pos' player) capturedList
+                in if capturedCount > 0
+                   then { scoreRed := if player == Player.Red then scoreRed field' + capturedCount else minus (scoreRed field') freedCount
+                        , scoreBlack := if player == Player.Black then scoreBlack field' + capturedCount else minus (scoreBlack field') freedCount
+                        , lastSurroundChains := chain :: lastSurroundChains field'
+                        , points := foldl (\points, p => replaceAt (toFin p) (Point.capture player (point field' p)) points) (points field') capturedList
+                        } field'
+                   else { points := foldl (\points, p =>
+                                        if point field' p == EmptyPoint
+                                        then replaceAt (toFin p) (EmptyBasePoint player) points
+                                        else points
+                                    ) (points field') capturedList
+                        } field'
+             ) initialField sortedChains
+       in if point' == EmptyBasePoint enemyPlayer
+          then
+             if not $ null $ lastSurroundChains fieldWithCaptures
+             then -- We broke the enemy base
+                let enemyEmptyBase = wave pos (\pos' => isEmptyBase fieldWithCaptures pos' enemyPlayer)
+                in { moves := newMoves
+                   , points := let points1 = replaceAt (toFin pos) (PlayerPoint player) $ points fieldWithCaptures
+                                   points2 = foldl (\points, p => replaceAt (toFin p) EmptyPoint points) points1 (SortedSet.toList enemyEmptyBase)
+                               in points2
+                   } fieldWithCaptures
+             else -- Suicide move
+                let enemyEmptyBaseChain = getEmptyBaseChain field pos enemyPlayer
+                    enemyEmptyBase = filter (\pos => isEmptyBase field pos player) $ SortedSet.toList $ maybe SortedSet.empty (getInsideRing pos) $ enemyEmptyBaseChain
+                in { scoreRed := if player == Player.Red then scoreRed field else scoreRed field + 1
+                   , scoreBlack := if player == Player.Black then scoreBlack field else scoreBlack field + 1
+                   , moves := newMoves
+                   , lastSurroundChains := maybe [] (:: []) enemyEmptyBaseChain
+                   , lastSurroundPlayer := enemyPlayer
+                   , points := let points1 = foldl (\points, p => replaceAt (toFin p) (BasePoint enemyPlayer False) points) (points field) enemyEmptyBase
+                                   points2 = replaceAt (toFin pos) (BasePoint enemyPlayer True) points1
+                               in points2
+                   } field
+          else -- Normal placement
+             { moves := newMoves
+             , points := replaceAt (toFin pos) (PlayerPoint player) $ points fieldWithCaptures
+             } fieldWithCaptures
 
 export
 lastPlayer : Field width height -> Maybe Player
